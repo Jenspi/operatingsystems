@@ -34,11 +34,11 @@ public class SingleThreadedPartA {
 			Scanner scanner = new Scanner(file);
 			String pattern = "[a-zA-Z]+";
 			Pattern r = Pattern.compile(pattern);
-			Matcher m = r.matcher(scanner.nextLine().toLowerCase().trim());
+			Matcher m = r.matcher(scanner.next().toLowerCase().trim());
 
 			// find() looks for next pattern match
 			// group() returns sequence of last pattern matched
-			while (scanner.hasNextLine()) {
+			while (scanner.hasNext()) {
 				if(m.find() && !(m.hitEnd())){
 					if (temp.containsKey(m.group())){
 						//if word already in hashmap, add one occurrence to value
@@ -49,10 +49,10 @@ public class SingleThreadedPartA {
 						temp.put(m.group(), 1);
 					}
 					//need a new matcher
-					m = r.matcher(scanner.nextLine().toLowerCase().trim());
+					m = r.matcher(scanner.next().toLowerCase().trim());
 				}
 				else{
-					m = r.matcher(scanner.nextLine().toLowerCase().trim());
+					m = r.matcher(scanner.next().toLowerCase().trim());
 				}
 			}
 
