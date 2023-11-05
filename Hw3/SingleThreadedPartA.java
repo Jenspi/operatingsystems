@@ -62,13 +62,15 @@ public class SingleThreadedPartA {
 			System.out.println("File not found: " + fileName);
 		}
 
-		//find and return most frequent word from all in temp hashmap
+		//find and return most frequent word >= 7 from all in temp hashmap
 		Integer maxValue = 0;
 		String maxKey = "";
 		for(Map.Entry<String, Integer> word : temp.entrySet()){
-			if(maxValue < word.getValue() ){
-				maxValue = word.getValue();
-				maxKey = word.getKey();
+			if(word.getKey().length() >= 7){
+				if(maxValue < word.getValue() ){
+					maxValue = word.getValue();
+					maxKey = word.getKey();
+				}
 			}
 		}
 
