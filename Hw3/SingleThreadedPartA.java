@@ -13,13 +13,13 @@ public class SingleThreadedPartA {
 		HashMap <String, String> finalWords = new HashMap<>();
 		
 		//Manually importing files:
-		finalWords.putAll(frequentWord("TimeUse.csv"));
-		finalWords.putAll(frequentWord("SMS_Spam.txt"));
-		finalWords.putAll(frequentWord("UFOReports.txt"));
-		finalWords.putAll(frequentWord("IMDB.csv"));
+		// finalWords.putAll(frequentWord("TimeUse.csv"));
+		// finalWords.putAll(frequentWord("SMS_Spam.txt"));
+		// finalWords.putAll(frequentWord("UFOReports.txt"));
+		// finalWords.putAll(frequentWord("IMDB.csv"));
 		finalWords.putAll(frequentWord("WineReviews.csv"));
-		finalWords.putAll(frequentWord("Resume.csv"));
-		finalWords.putAll(frequentWord("FakeNews.csv"));
+		// finalWords.putAll(frequentWord("Resume.csv"));
+		// finalWords.putAll(frequentWord("FakeNews.csv"));
 
 		//printing everything:
 		for(Map.Entry<String, String> word : finalWords.entrySet()){
