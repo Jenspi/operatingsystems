@@ -21,6 +21,7 @@ public class SingleThreadedPartB {
 		// 	System.out.println(file);	
 		// }
 
+		//time:
 		long start = System.nanoTime();
 		finalWords.putAll(frequentWord(fileNames));
 		long end = System.nanoTime();
@@ -33,62 +34,61 @@ public class SingleThreadedPartB {
 		}
 	}
 	public static Map<String, String> frequentWord(String[] fileNames){
-		
 		HashMap <String, String> output = new HashMap<>();
 		for(int i=0; i<fileNames.length; i++){
 			HashMap <String, Integer> temp = new HashMap<>();
 			//debugging:
-			System.out.println("entered for loop");
-		try{
-			
-				File file = new File(fileNames[i]);
-				Scanner scanner = new Scanner(file);
-				String pattern = "[a-zA-Z]+";
-				Pattern r = Pattern.compile(pattern);
-				Matcher m = r.matcher(scanner.next().toLowerCase().trim());
+			//System.out.println("entered for loop");
+			try{
+				
+					File file = new File(fileNames[i]);
+					Scanner scanner = new Scanner(file);
+					String pattern = "[a-zA-Z]+";
+					Pattern r = Pattern.compile(pattern);
+					Matcher m = r.matcher(scanner.next().toLowerCase().trim());
 
-				// find() looks for next pattern match
-				// group() returns sequence of last pattern matched
-				while (scanner.hasNext()) {
-					if(m.find() && !(m.hitEnd())){
-						if (temp.containsKey(m.group())){
-							//if word already in hashmap, add one occurrence to value
-							temp.put(m.group(), (temp.get(m.group())+1));
+					// find() looks for next pattern match
+					// group() returns sequence of last pattern matched
+					while (scanner.hasNext()) {
+						if(m.find() && !(m.hitEnd())){
+							if (temp.containsKey(m.group())){
+								//if word already in hashmap, add one occurrence to value
+								temp.put(m.group(), (temp.get(m.group())+1));
+							}
+							else if (!(temp.containsKey(m.group())) ){
+								//if word not in hashmap yet, add key with the value of one occurrence
+								temp.put(m.group(), 1);
+							}
+							//need a new matcher
+							m = r.matcher(scanner.next().toLowerCase().trim());
 						}
-						else if (!(temp.containsKey(m.group())) ){
-							//if word not in hashmap yet, add key with the value of one occurrence
-							temp.put(m.group(), 1);
+						else{
+							m = r.matcher(scanner.next().toLowerCase().trim());
 						}
-						//need a new matcher
-						m = r.matcher(scanner.next().toLowerCase().trim());
 					}
-					else{
-						m = r.matcher(scanner.next().toLowerCase().trim());
+				
+
+				scanner.close();
+			}
+			catch (FileNotFoundException e) {
+				System.out.println("File not found: " + fileNames[i]);
+			}
+
+			//find and return most frequent word >= 7 from all in temp hashmap
+			Integer maxValue = 0;
+			String maxKey = "";
+			for(Map.Entry<String, Integer> word : temp.entrySet()){
+				if(word.getKey().length() >= 7){
+					if(maxValue < word.getValue() ){
+						maxValue = word.getValue();
+						maxKey = word.getKey();
 					}
-				}
-			
-
-			scanner.close();
-		}
-		catch (FileNotFoundException e) {
-			System.out.println("File not found: " + fileNames[i]);
-		}
-
-		//find and return most frequent word >= 7 from all in temp hashmap
-		Integer maxValue = 0;
-		String maxKey = "";
-		for(Map.Entry<String, Integer> word : temp.entrySet()){
-			if(word.getKey().length() >= 7){
-				if(maxValue < word.getValue() ){
-					maxValue = word.getValue();
-					maxKey = word.getKey();
 				}
 			}
-		}
 
-		//returning	 <file_name, most_frequent_word>
-		output.put( fileNames[i], maxKey );
-	}
+			//returning	 <file_name, most_frequent_word>
+			output.put( fileNames[i], maxKey );
+		}//end for-loop
 		return output;
 	}//end method
 }//end class
