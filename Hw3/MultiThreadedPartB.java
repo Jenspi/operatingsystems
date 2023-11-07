@@ -26,7 +26,7 @@ public class MultiThreadedPartB {
 		long start = System.nanoTime();
 		int number_threads = 1;
         for (int i = 0; i < number_threads; i++) {
-            Thread t = new Thread(new MultiThreaded(fileNames));
+            Thread t = new Thread(new MultiThreadedB(fileNames));
             t.start();
 
 			try{
@@ -42,11 +42,11 @@ public class MultiThreadedPartB {
 	
 }//end class
 
-class MultiThreaded implements Runnable {
+class MultiThreadedB implements Runnable {
 	private String[] pwd;
 	Map <String, String> finalWords = Collections.synchronizedMap(new HashMap<String, String>());
 
-	public MultiThreaded(String[] pwd){
+	public MultiThreadedB(String[] pwd){
 		this.pwd = pwd;
 	}
 
