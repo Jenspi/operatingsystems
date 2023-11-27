@@ -1,4 +1,6 @@
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,6 +18,7 @@ public class Deadlock{
         */
         File file = new File(args[0]);
         Scanner scanner = new Scanner(file);
+        RAG graph = new RAG();
     
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
@@ -26,6 +29,31 @@ public class Deadlock{
             String resource = columns[2].trim();
             //data.put(custID, custName);
             //}
+            Node processNode = rag.newNode(process);
+            Node resourceNode = rag.newNode(resource);
+
+            if(action.toLowerCase().equals("w")){
+                //wants
+                System.out.print("Process 1 wants resource 1 – ");
+                if(deadlockCycle(next, visited, visited2)){
+                    System.out.println("Process 1 must wait.");
+                }
+                else{
+                    System.out.println("Resource 1 is allocated to process 1.");
+                }
+
+            }
+            else if(action.toLowerCase().equals("r")){
+                //releases
+                System.out.print("Process 1 releases resource 1 –");
+                if(deadlockCycle(next, visited, visited2)){
+                    System.out.println("Resource 1 is allocated to process 5.");
+                }
+                else{
+                    System.out.println("Resource 1 is now free.");
+                }
+
+            }
         }
         
         scanner.close();
@@ -40,6 +68,8 @@ class RAG {
 
     public Node newNode(String name){
         Node node = new Node(name);
+        //add to edges so deadlock helper functions can access it
+        edge.add(next);
         return node;
     }
     public void addEdge(Node current, Node next){
@@ -47,7 +77,6 @@ class RAG {
         //current.addNode(next) == current -> next
         //next would not point to current unless we added current to be next's edge
         current.addNode(next);
-
     }
     public void removeEdge(Node current, Node next){
         current.removeNode(next);
@@ -63,8 +92,46 @@ class RAG {
             process.addNode(resource);
         }
     }
-    public boolean deadlockPresence(){
+    public void deadlockPresence(){
         //note: not necessary to check for deadlock after a resource release
+        ArrayList<Node> visited = new ArrayList<Node>();
+        ArrayList<Node> visited2 = new ArrayList<Node>();
+
+        for(Node node : edge){
+            if(!visited.contains(node)){
+                //means
+                if(deadlockCycle(node, visited, visited2)){
+                    //true
+
+                    //go through all processes
+
+                    System.out.println("DEADLOCK");
+                }
+            }
+        }
+        //false
+        System.out.println("NO DEADLOCK");
+    }
+    public boolean deadlockCycle(Node node, ArrayList<Node> visited, ArrayList<Node> visited2){
+        //helper function for deadlockPresence
+        visited.add(node);
+        visited2.add(node);
+            for(Node next : n.nextNode){
+            if(!visited.contains(next)){
+                //means
+                if(deadlockCycle(next, visited, visited2)){
+                    //true
+                    return true;
+                }
+            }
+            else if(visited.contains(next)){
+                //true
+                return true;
+            }
+        }
+
+        visited2.remove();
+        return false;
     }
 
 }//end RAG class
