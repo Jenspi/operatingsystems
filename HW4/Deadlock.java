@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -8,55 +9,59 @@ import java.util.regex.Pattern;
 public class Deadlock{
     public static void main( String [] args ) {
         //here lies code to process the input file and simulate resource allocations ...
-        //the operations (AddNode, AddEdge, RemoveEdge, etc.) will be required.
-
         /*
         Input to your program will consist of lines like the following, read from a file:
             1 W 1
             2 W 2
             3 W 6
         */
-        File file = new File(args[0]);
-        Scanner scanner = new Scanner(file);
-        RAG graph = new RAG();
-    
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String[] columns = line.split(" ");
-            //if (columns.length >= 4) {
-            String process = columns[0].trim();
-            String action = columns[1].trim();
-            String resource = columns[2].trim();
-            //data.put(custID, custName);
-            //}
-            Node processNode = rag.newNode(process);
-            Node resourceNode = rag.newNode(resource);
-
-            if(action.toLowerCase().equals("w")){
-                //wants
-                System.out.print("Process 1 wants resource 1 – ");
-                if(deadlockCycle(next, visited, visited2)){
-                    System.out.println("Process 1 must wait.");
-                }
-                else{
-                    System.out.println("Resource 1 is allocated to process 1.");
-                }
-
-            }
-            else if(action.toLowerCase().equals("r")){
-                //releases
-                System.out.print("Process 1 releases resource 1 –");
-                if(deadlockCycle(next, visited, visited2)){
-                    System.out.println("Resource 1 is allocated to process 5.");
-                }
-                else{
-                    System.out.println("Resource 1 is now free.");
-                }
-
-            }
-        }
+        try{
+            File file = new File(args[0]);
+            Scanner scanner = new Scanner(file);
+            RAG graph = new RAG();
         
-        scanner.close();
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] columns = line.split(" ");
+                String process = columns[0].trim();
+                String action = columns[1].trim();
+                String resource = columns[2].trim();
+                
+                Node processNode = graph.newNode(process);
+                Node resourceNode = graph.newNode(resource);
+
+                if(action.toLowerCase().equals("w")){
+                    //wants-- two outcomes: process successfully allocated, or process must wait on another process taking the resource
+                    System.out.print("Process "+process+" wants resource "+resource+" – ");
+                    graph.requestEdge(processNode, resourceNode);
+                    // if(resourceNode.nextNode.isEmpty()){
+                        
+                    //     System.out.println("Resource "+resource+" is allocated to process "+process+".");
+                    // }
+                    // else{
+                    //     System.out.println("Process "+process+" must wait.");
+                    // }
+
+                }
+                else if(action.toLowerCase().equals("r")){
+                    //releases-- one outcome: resource released
+                    System.out.print("Process "+process+" releases resource "+resource+" –");
+                    graph.removeEdge(processNode, resourceNode);
+                    System.out.println("Resource "+resource+" is now free.");
+                }
+            }
+            graph.deadlockPresence();
+            // if(graph.deadlockPresence()){
+            //     System.out.println("DEADLOCK DETECTED: ");//Processes 2, 3, 4, and Resources 2, 3, 6, are found in a cycle.");
+            // }
+            
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found: " + args[0]);
+        }
+        catch (java.lang.ArrayIndexOutOfBoundsException a) {
+            System.out.println("No file specified!");
+        }
     }
 }//end Deadlock class
 
@@ -69,7 +74,9 @@ class RAG {
     public Node newNode(String name){
         Node node = new Node(name);
         //add to edges so deadlock helper functions can access it
-        edge.add(next);
+        edge.add(node);
+        //add node to Node class so we can check later if that nextNode list is empty
+        //node.addNode(node);
         return node;
     }
     public void addEdge(Node current, Node next){
@@ -81,18 +88,19 @@ class RAG {
     public void removeEdge(Node current, Node next){
         current.removeNode(next);
     }
-    //public void assignEdge(){}
     public void requestEdge(Node process, Node resource){
         if(resource.nextNode.isEmpty()){
             //if resource is available
             resource.addNode(process);
+            System.out.println("Resource "+resource.name+" is allocated to process "+process.name+".");
         }
         else if(!resource.nextNode.isEmpty()){
             //if resource pre-occupied   
-            process.addNode(resource);
+            //process.addNode(resource);
+            System.out.println("Process "+process.name+" must wait.");
         }
     }
-    public void deadlockPresence(){
+    public boolean deadlockPresence(){
         //note: not necessary to check for deadlock after a resource release
         ArrayList<Node> visited = new ArrayList<Node>();
         ArrayList<Node> visited2 = new ArrayList<Node>();
@@ -106,17 +114,19 @@ class RAG {
                     //go through all processes
 
                     System.out.println("DEADLOCK");
+                    return true;
                 }
             }
         }
         //false
-        System.out.println("NO DEADLOCK");
+        System.out.println("EXECUTION COMPLETED: No deadlock encountered.");
+        return false;
     }
     public boolean deadlockCycle(Node node, ArrayList<Node> visited, ArrayList<Node> visited2){
         //helper function for deadlockPresence
         visited.add(node);
         visited2.add(node);
-            for(Node next : n.nextNode){
+            for(Node next : node.nextNode){
             if(!visited.contains(next)){
                 //means
                 if(deadlockCycle(next, visited, visited2)){
@@ -130,7 +140,7 @@ class RAG {
             }
         }
 
-        visited2.remove();
+        visited2.remove(node);
         return false;
     }
 
