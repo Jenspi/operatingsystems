@@ -92,10 +92,31 @@ public class HW5{ //don't rename
 		int worstFit = 0;
 		
 		//ToDo: add your code to calculate @firstFit
+		for(int i=0; i<memoryHoles.length; i++){
+			if(memoryHoles[i] >= requestSize){
+				firstFit = i;
+				break;
+			}
+		}
 
 		//ToDo: add your code to calculate @bestFit
+		int min = 999999;
+		for(int i=0; i<memoryHoles.length; i++){
+			if( (memoryHoles[i]<min)&&(memoryHoles[i] >= requestSize) ){
+				min = memoryHoles[i];
+				bestFit = i;
+			}
+		}
 
 		//ToDo: add your code to calculate @worsFit
+		int max = 0;
+		for(int i=0; i<memoryHoles.length; i++){
+			//same as best fit, but with max instead
+			if( (memoryHoles[i]>max)&&(memoryHoles[i] >= requestSize) ){
+				max = memoryHoles[i];
+				worstFit = i;
+			}
+		}
 		
 		System.out.println(String.format("\t%1$12s%2$12s%3$12s%4$12s", requestSize, firstFit, bestFit, worstFit)); //Do not modify		
 	}
@@ -108,10 +129,10 @@ public class HW5{ //don't rename
 		int offset = 0;
 
 		//ToDo: add your code to calculate the page number @pageNbr
-		pageNbr = pageSize;
+		pageNbr = addrRef/pageSize;
 
 		//ToDo: add your code to calculate the offset @offset
-		offset = pageNbr + pageSize;
+		offset = addrRef%pageSize;
 
 		System.out.println(String.format("\t%1$10s%2$8s%3$8s", addrRef, pageNbr, offset));		
 	}
@@ -127,14 +148,14 @@ public class HW5{ //don't rename
 		int phyAddr = 0;
 
 		//ToDo: add your code to calculate the frameNbr @frameNbr
-		pageNbr = pageSize;
-		frameNbr = pageNbr;
+		pageNbr = addr/pageSize;
+		frameNbr = pageTable[pageNbr][1];
 
 		//ToDo: add your code to calculate the offset @offset
-		offset = pageSize;
+		offset = addr % pageSize;
 
 		//ToDo: add your code to calculate the physical address @phyAddr
-		phyAddr = frameNbr + offset;
+		phyAddr = (frameNbr*pageSize) + offset;
 
 		System.out.println(String.format("\t%1$10s%2$8s%3$8s%4$17s", addr, frameNbr, offset, phyAddr));		
 	}
@@ -165,7 +186,30 @@ public class HW5{ //don't rename
 		int faults = 0;
 		
 		//ToDo: add your code to calculate the faults @faults
+		ArrayList<Integer> faultsList = new ArrayList<>();
+		LinkedList<Integer> fifo = new LinkedList<>();
 
+		for(int i=0; i<refString.length; i++){
+			if(faultsList.size() < frames){
+				//page fault
+				if(!faultsList.contains(refString[i])){
+					faultsList.add(refString[i]);
+					fifo.add(refString[i]);
+					faults++;
+				}
+			}
+			else{
+				if(!faultsList.contains(refString[i])){
+					int temp = fifo.getFirst();
+					faultsList.remove(temp);
+					faultsList.add(refString[i]);
+					fifo.add(refString[i]);
+					faults++;
+				}
+			}
+		}
+
+		
 		System.out.println("\tFIFO Faults: " + faults);
 	}
 
@@ -177,6 +221,28 @@ public class HW5{ //don't rename
 		int faults = 0;
 
 		//ToDo: add your code to calculate the faults @faults
+		ArrayList<Integer> pages = new ArrayList<>();
+
+		for(int i : refString){
+			if(!pages.contains(i)){
+				if(pages.size() == frames){
+					pages.remove(0);
+					pages.add(frames-1, i);
+				}
+				else{
+					pages.add(i);
+				}
+				faults++;
+			}
+			
+			else{
+				pages.remove((Object)i);
+				pages.add(pages.size(), i);
+
+			}
+		}
+		
+		
 
 		System.out.println("\tLRU Faults: " + faults);
 	}
@@ -202,6 +268,14 @@ public class HW5{ //don't rename
 		double fileSize = 0;
 
 		//ToDo: calculate the max file size @fileSize
+		int singleIndirectPtrs = 1;
+		int blockinBytes = pageSize* (int)Math.pow(2, 10);
+		int block = blockinBytes/pageSize;//4*1024=4096 bytes ; 4096bytes/4bytes= block size
+		
+		//Calculate max size then convert to GB
+		//file size = pointers * block size, then /1024 for bytes -> MB and /1024 for MB -> GB
+		fileSize = directPtrs + (int)Math.pow(singleIndirectPtrs,1) * block;
+		fileSize = fileSize * (blockinBytes/1024/1024);
 
 		System.out.println(String.format("\tI-Node 1 File Size: %,.2f GB", fileSize));
 	}
@@ -212,6 +286,15 @@ public class HW5{ //don't rename
 		double fileSize = 0;
 
 		//ToDo: calculate the max file size @fileSize
+		int singleIndirectPtrs = 1;
+		int doubleIndirectPtrs = 1;
+		int blockinBytes = pageSize * 1024;
+		int pointers = 1024/pageSize;//4*1024=4096 bytes ; 4096bytes/4bytes= block size
+		
+		//Calculate max size then convert to GB
+		//file size = pointers * block size, then /1024 for bytes -> MB and /1024 for MB -> GB
+		fileSize = directPtrs + (int)Math.pow(singleIndirectPtrs,1) + (int)Math.pow(doubleIndirectPtrs,2) * pointers;
+		fileSize = fileSize * (blockinBytes/1024/1024);
 
 		System.out.println(String.format("\tI-Node 2 File Size: %,.2f GB", fileSize));
 	}
@@ -253,6 +336,11 @@ public class HW5{ //don't rename
 		int fcfsMovements = 0;
 
 		//ToDo: add your code to calculate @fcfsMovements
+		for(int i=0; i<requests.length; i++){
+			int current = requests[i];
+			fcfsMovements += Math.abs(current-start);
+			start = current;
+		}
 
 		System.out.println(String.format("\tFCFS Movements: %s", fcfsMovements));
 	}
@@ -267,6 +355,29 @@ public class HW5{ //don't rename
 		int scanMovements = 0;					
 		
 		//ToDo: add your code to calculate @scanMovements
+		int[] left = new int[requests.length];
+		int[] right = new int[requests.length];
+		int leftIndex = 0;
+		int rightIndex = 0;
+
+		for(int request : requests){
+			if(request < start){
+				left[leftIndex++] = request;
+			}
+			else{
+				right[rightIndex++] = request;
+			}
+		}
+
+		for(int i=0; i < leftIndex; i++){
+			scanMovements += Math.abs(start-left[i]);
+			start = left[i];
+		}
+		for(int i=0; i < rightIndex; i++){
+			scanMovements += Math.abs(start-right[i]);
+			start = right[i];
+		}
+
 
 		System.out.println(String.format("\tSCAN Movements: %s", scanMovements));
 	}
@@ -279,6 +390,7 @@ public class HW5{ //don't rename
 		int lookMovements = 0;	
 
 		//ToDo: add your code to calculate @lookMovements		
+		
 
 		System.out.println(String.format("\tLOOK Movements: %s", lookMovements));
 		
@@ -293,6 +405,19 @@ public class HW5{ //don't rename
 		int sstfMovements = 0;
 		
 		//ToDo: add your code to calculate @sstfMovements
+		ArrayList<Integer> left = new ArrayList<>();
+		ArrayList<Integer> right = new ArrayList<>();
+
+		for(int request : requests){
+			if(request < start){
+				left.add(request);
+			}
+			else{
+				right.add(request);
+			}
+		}
+
+		
 		
 		System.out.println(String.format("\tSSTF Movements: %s", sstfMovements));
 	}
