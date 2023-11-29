@@ -268,14 +268,17 @@ public class HW5{ //don't rename
 		double fileSize = 0;
 
 		//ToDo: calculate the max file size @fileSize
-		int singleIndirectPtrs = 1;
-		int blockinBytes = pageSize* (int)Math.pow(2, 10);
-		int block = blockinBytes/pageSize;//4*1024=4096 bytes ; 4096bytes/4bytes= block size
+		// int singleIndirectPtrs = 1;
+		// int blockinBytes = pageSize* (int)Math.pow(2, 10);
+		// int block = blockinBytes/pageSize;//4*1024=4096 bytes ; 4096bytes/4bytes= block size
 		
-		//Calculate max size then convert to GB
-		//file size = pointers * block size, then /1024 for bytes -> MB and /1024 for MB -> GB
-		fileSize = directPtrs + (int)Math.pow(singleIndirectPtrs,1) * block;
-		fileSize = fileSize * (blockinBytes/1024/1024);
+		// //Calculate max size then convert to GB
+		// //file size = pointers * block size, then /1024 for bytes -> MB and /1024 for MB -> GB
+		// fileSize = directPtrs + (int)Math.pow(singleIndirectPtrs,1) * block;
+		// fileSize = fileSize * (blockinBytes/1024/1024);
+		int singleIndPtrs = pageSize/ptrSize;
+		double totalPtrs = singleIndPtrs + directPtrs;
+		fileSize = (totalPtrs*pageSize) /1024/1024/1024;
 
 		System.out.println(String.format("\tI-Node 1 File Size: %,.2f GB", fileSize));
 	}
@@ -286,15 +289,20 @@ public class HW5{ //don't rename
 		double fileSize = 0;
 
 		//ToDo: calculate the max file size @fileSize
-		int singleIndirectPtrs = 1;
-		int doubleIndirectPtrs = 1;
-		int blockinBytes = pageSize * 1024;
-		int pointers = 1024/pageSize;//4*1024=4096 bytes ; 4096bytes/4bytes= block size
+		// int singleIndirectPtrs = 1;
+		// int doubleIndirectPtrs = 1;
+		// int blockinBytes = pageSize * 1024;
+		// int pointers = 1024/pageSize;//4*1024=4096 bytes ; 4096bytes/4bytes= block size
 		
-		//Calculate max size then convert to GB
-		//file size = pointers * block size, then /1024 for bytes -> MB and /1024 for MB -> GB
-		fileSize = directPtrs + (int)Math.pow(singleIndirectPtrs,1) + (int)Math.pow(doubleIndirectPtrs,2) * pointers;
-		fileSize = fileSize * (blockinBytes/1024/1024);
+		// //Calculate max size then convert to GB
+		// //file size = pointers * block size, then /1024 for bytes -> MB and /1024 for MB -> GB
+		// fileSize = directPtrs + (int)Math.pow(singleIndirectPtrs,1) + (int)Math.pow(doubleIndirectPtrs,2) * pointers;
+		// fileSize = fileSize * (blockinBytes/1024/1024);
+		int singleIndPtrs = pageSize/ptrSize;
+		double doubleIndPtrs = singleIndPtrs * singleIndPtrs;
+
+		double totalPtrs = singleIndPtrs + directPtrs + doubleIndPtrs;
+		fileSize = (totalPtrs*pageSize) /1024/1024/1024;
 
 		System.out.println(String.format("\tI-Node 2 File Size: %,.2f GB", fileSize));
 	}
@@ -355,28 +363,36 @@ public class HW5{ //don't rename
 		int scanMovements = 0;					
 		
 		//ToDo: add your code to calculate @scanMovements
-		int[] left = new int[requests.length];
-		int[] right = new int[requests.length];
-		int leftIndex = 0;
-		int rightIndex = 0;
+		// int[] left = new int[requests.length];
+		// int[] right = new int[requests.length];
+		// int leftIndex = 0;
+		// int rightIndex = 0;
 
-		for(int request : requests){
-			if(request < start){
-				left[leftIndex++] = request;
-			}
-			else{
-				right[rightIndex++] = request;
-			}
-		}
+		// for(int request : requests){
+		// 	if(request < start){
+		// 		left[leftIndex++] = request;
+		// 	}
+		// 	else{
+		// 		right[rightIndex++] = request;
+		// 	}
+		// }
 
-		for(int i=0; i < leftIndex; i++){
-			scanMovements += Math.abs(start-left[i]);
-			start = left[i];
+		// for(int i=0; i < leftIndex; i++){
+		// 	scanMovements += Math.abs(start-left[i]);
+		// 	start = left[i];
+		// }
+		// for(int i=0; i < rightIndex; i++){
+		// 	scanMovements += Math.abs(start-right[i]);
+		// 	start = right[i];
+		// }
+		int minreq = max;
+
+		for(int request:requests){
+			if(request<minreq){
+				minreq = request;
+			}
 		}
-		for(int i=0; i < rightIndex; i++){
-			scanMovements += Math.abs(start-right[i]);
-			start = right[i];
-		}
+		scanMovements = (max-start)+(max-minreq);
 
 
 		System.out.println(String.format("\tSCAN Movements: %s", scanMovements));
@@ -390,7 +406,18 @@ public class HW5{ //don't rename
 		int lookMovements = 0;	
 
 		//ToDo: add your code to calculate @lookMovements		
+		int minreq = max;
+		int highreq = start;
 		
+		for(int request:requests){
+			if(request<minreq){
+				minreq = request;
+			}
+			if(request>highreq){
+				highreq = request;
+			}
+		}
+		scanMovements = (max-start)+(max-minreq);
 
 		System.out.println(String.format("\tLOOK Movements: %s", lookMovements));
 		
@@ -405,19 +432,46 @@ public class HW5{ //don't rename
 		int sstfMovements = 0;
 		
 		//ToDo: add your code to calculate @sstfMovements
-		ArrayList<Integer> left = new ArrayList<>();
-		ArrayList<Integer> right = new ArrayList<>();
+		// ArrayList<Integer> left = new ArrayList<>();
+		// ArrayList<Integer> right = new ArrayList<>();
 
-		for(int request : requests){
-			if(request < start){
-				left.add(request);
+		// for(int request : requests){
+		// 	if(request < start){
+		// 		left.add(request);
+		// 	}
+		// 	else{
+		// 		right.add(request);
+		// 	}
+		// }
+		int[] newRequests = requests;
+		int position = start;
+
+		for(int i=0;i<requests.length; i++){
+			int diff = max;
+			int req = 0;
+
+			for(int request : newRequests){
+				if(Math.abs(position-request)<diff){
+					diff = Math.abs(position-request);
+					req = request;
+				}
 			}
-			else{
-				right.add(request);
+			position = req;
+			sstfMovements += diff;
+
+			//remove request from newRequest
+			int[] temp = new int[newRequests.length-1];
+			int j=0;
+
+			for (int request2:newRequests){
+				if(request2 == req){
+					continue;
+				}
+				temp[j] = request2j+=1;
 			}
+			newRequests = temp;
 		}
 
-		
 		
 		System.out.println(String.format("\tSSTF Movements: %s", sstfMovements));
 	}
