@@ -45,7 +45,7 @@ public class Deadlock{
                 }
                 else if(action.toLowerCase().equals("r")){
                     //releases-- one outcome: resource released
-                    System.out.print("Process "+process+" releases resource "+resource+" –");
+                    System.out.print("Process "+process+" releases resource "+resource+" – ");
                     graph.removeEdge(processNode, resourceNode);
                     System.out.println("Resource "+resource+" is now free.");
                 }
