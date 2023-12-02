@@ -12,7 +12,7 @@ public class Deadlock{
     public static void main( String [] args ) {
         //here lies code to process the input file and simulate resource allocations ...
         /*
-        Input to your program will consist of lines like the following, read from a file:
+            Input example, read from a file:
             1 W 1
             2 W 2
             3 W 6
@@ -37,17 +37,12 @@ public class Deadlock{
                 if(action.toLowerCase().equals("w")){
                     // wants-- two outcomes: process successfully allocated, or process must wait on another process taking the resource
                     outputFile.write("Process "+process+" wants resource "+resource+" – ");
-                    
                     outputFile.write(graph.requestEdge(processNode, resourceNode));
                 }
                 else if(action.toLowerCase().equals("r")){
                     // releases-- one outcome: resource released
                     outputFile.write("Process "+process+" releases resource "+resource+" – ");
                     outputFile.write(graph.removeEdge(processNode, resourceNode));
-                    //resourceNode.setBusy(false);
-                    //outputFile.write(graph.requestEdge(processNode, resourceNode));
-                    //outputFile.write("Resource "+resource+" is now free.\n");
-                    //outputFile.write("Resource "+resource+" is now free.\n");
                 }
 
                 if(graph.deadlockPresence().equals("DEADLOCK DETECTED")){
@@ -58,7 +53,7 @@ public class Deadlock{
             outputFile.write( graph.deadlockPresence() );
             
             outputFile.close();
-            System.out.println("Output created: "+ outputname);
+            System.out.println("\nOutput created: "+ outputname+"\n");
             scanner.close();
         } catch (FileNotFoundException e) {
             System.out.println("File not found: " + args[0]);
@@ -97,9 +92,7 @@ class RAG {
         System.out.println("Resource: " + resource.name + ", Is Busy?: " + resource.isBusy());
         System.out.println("Process: " + process.name);
 
-        //if(resource.nodeList.isEmpty()){
         if(!resource.isBusy()){
-
             //if resource is available
             addEdge(resource, process);
             // DEBUGGING:
@@ -110,10 +103,7 @@ class RAG {
             return "Resource "+resource.name+" is allocated to process "+process.name+".\n";
             
         }
-        //else if(!resource.nodeList.isEmpty()){
         else{
-        //else if(resource.isBusy()){
-
             //if resource pre-occupied
             // DEBUGGING:
             // System.out.println("FULL resource list: ");
@@ -121,7 +111,6 @@ class RAG {
             ////////////////////////////////////////////////
             return "Process "+process.name+" must wait.\n";
         }
-        //return "";
     }
     public void addEdge(Node current, Node next){
         //need directed egdes!!
@@ -134,26 +123,23 @@ class RAG {
         // current = process; next = resource
         current.removeNode(next);
         edge.remove(next);
-        
+
         current.setBusy(false);
-        // for(Node node : edge){
-            if(!edge.isEmpty()){
-
-                System.out.println("----------------------");
-                for(Node node : edge){
-                    System.out.println(node.name+", ");
-                }
-                System.out.println("----------------------");
-
-
-                return requestEdge( edge.get(1),current);
-                
-            }
-        // }
-            else{
-                return "Resource "+current.name+" is now free.\n";
-            }
+        next.setBusy(false);
         
+        if(!edge.isEmpty()){
+            //DEBUGGING:
+            // System.out.println("----------------------");
+            // for(Node node : edge){
+            //     System.out.println(node.name+", ");
+            // }
+            // System.out.println("----------------------");
+
+            return requestEdge( edge.get(0), current);
+        }
+        else{
+            return "Resource "+current.name+" is now free.\n";
+        }
     }
     
     //deadlocks:
@@ -167,7 +153,6 @@ class RAG {
                 if(deadlockCycle(node, visited, path)){
                     //true; deadlock detected when entering this block
                     return "DEADLOCK DETECTED";
-                    //return true;
                 }
             }
         }
@@ -238,5 +223,17 @@ class Node {
    
         this.isBusy = bool;
     }
+    // public Node getNextNode(Node node){
+    //     if(nodeList.isEmpty()){
+    //         return null;
+    //     }
+    //     else{
+    //         for(Node n : nodeList){
+    //             if(n.equals(node)){
+    //                 return nodeList.next();
+    //             }
+    //         }
+    //     }
+    // }
 }//end Node class
     
