@@ -31,8 +31,8 @@ public class Deadlock{
                 String action = columns[1].trim();
                 String resource = columns[2].trim();
                 
-                Node processNode = graph.newNode(process, true);
-                Node resourceNode = graph.newNode(resource, false);
+                Node processNode = graph.newNode(process, false);
+                Node resourceNode = graph.newNode(resource, true);
 
                 if(action.toLowerCase().equals("w")){
                     // wants-- two outcomes: process successfully allocated, or process must wait on another process taking the resource
@@ -43,9 +43,15 @@ public class Deadlock{
                 else if(action.toLowerCase().equals("r")){
                     // releases-- one outcome: resource released
                     outputFile.write("Process "+process+" releases resource "+resource+" – ");
-                    graph.removeEdge(processNode, resourceNode);
-                    resourceNode.setBusy(false);
-                    outputFile.write("Resource "+resource+" is now free.\n");
+                    outputFile.write(graph.removeEdge(processNode, resourceNode));
+                    //resourceNode.setBusy(false);
+                    //outputFile.write(graph.requestEdge(processNode, resourceNode));
+                    //outputFile.write("Resource "+resource+" is now free.\n");
+                    //outputFile.write("Resource "+resource+" is now free.\n");
+                }
+
+                if(graph.deadlockPresence().equals("DEADLOCK DETECTED")){
+                    outputFile.write( graph.deadlockPresence() );
                 }
             }
             //print of there was a deadlock or not:
@@ -73,6 +79,13 @@ class RAG {
     public ArrayList<Node> edge = new ArrayList<Node>();
 
     public Node newNode(String name, boolean isResource){
+        //check if node already exists (issue was occurring where a new resource would generate and not know it was busy before)
+        for(Node node:edge){
+            if(node.name.equals(name) && node.isResource){
+                return node;
+            }
+        }
+        //if not, create one:
         Node node = new Node(name, isResource);
         edge.add(node);
         return node;
@@ -80,8 +93,12 @@ class RAG {
 
     //edges:
     public String requestEdge(Node process, Node resource){
-        if(resource.nodeList.isEmpty()){
-        //if(!resource.isBusy()){
+        //DEBUGGING:
+        System.out.println("Resource: " + resource.name + ", Is Busy?: " + resource.isBusy());
+        System.out.println("Process: " + process.name);
+
+        //if(resource.nodeList.isEmpty()){
+        if(!resource.isBusy()){
 
             //if resource is available
             addEdge(resource, process);
@@ -93,7 +110,8 @@ class RAG {
             return "Resource "+resource.name+" is allocated to process "+process.name+".\n";
             
         }
-        else if(!resource.nodeList.isEmpty()){
+        //else if(!resource.nodeList.isEmpty()){
+        else{
         //else if(resource.isBusy()){
 
             //if resource pre-occupied
@@ -103,28 +121,50 @@ class RAG {
             ////////////////////////////////////////////////
             return "Process "+process.name+" must wait.\n";
         }
-        return "";
+        //return "";
     }
     public void addEdge(Node current, Node next){
         //need directed egdes!!
         //current.addNode(next) == current -> next
         //next would not point to current unless we added current to be next's edge
         current.addNode(next);
+        current.setBusy(true);
     }
-    public void removeEdge(Node current, Node next){
+    public String removeEdge(Node current, Node next){
+        // current = process; next = resource
         current.removeNode(next);
         edge.remove(next);
+        
+        current.setBusy(false);
+        // for(Node node : edge){
+            if(!edge.isEmpty()){
+
+                System.out.println("----------------------");
+                for(Node node : edge){
+                    System.out.println(node.name+", ");
+                }
+                System.out.println("----------------------");
+
+
+                return requestEdge( edge.get(1),current);
+                
+            }
+        // }
+            else{
+                return "Resource "+current.name+" is now free.\n";
+            }
+        
     }
     
     //deadlocks:
     public String deadlockPresence(){
         //note: not necessary to check for deadlock after a resource release
         ArrayList<Node> visited = new ArrayList<Node>();
-        ArrayList<Node> visited2 = new ArrayList<Node>();
+        ArrayList<Node> path = new ArrayList<Node>();
 
         for(Node node : edge){
             if(!visited.contains(node)){
-                if(deadlockCycle(node, visited, visited2)){
+                if(deadlockCycle(node, visited, path)){
                     //true; deadlock detected when entering this block
                     return "DEADLOCK DETECTED";
                     //return true;
@@ -135,23 +175,26 @@ class RAG {
         return "EXECUTION COMPLETED: No deadlock encountered.";
         //return false;
     }
-    public boolean deadlockCycle(Node node, ArrayList<Node> visited, ArrayList<Node> visited2){
+    public boolean deadlockCycle(Node node, ArrayList<Node> visited, ArrayList<Node> path){
         //recursive helper function for deadlockPresence
-        visited.add(node);
-        visited2.add(node);
-            for(Node next : node.nodeList){
+        visited.add(node);//iteratively visited nodes for entire graph
+        path.add(node);//current path
+
+        for(Node next : node.nodeList){
             if(!visited.contains(next)){
-                if(deadlockCycle(next, visited, visited2)){
-                    return true;
+                //traverse through neighbors
+                if(deadlockCycle(next, visited, path)){
+                    return false;
                 }
             }
-            else if(visited.contains(next)){
+            else if(path.contains(next)){
                 //CYCLE
                 return true;
             }
         }
 
-        visited2.remove(node);
+        //if no cycle detected
+        path.remove(node);
         return false;
     }
 }//end RAG class
@@ -191,6 +234,8 @@ class Node {
         return this.isBusy;
     }
     public void setBusy(boolean bool){
+        System.out.println("Setting busy status of node " + this.name + " to " + bool);
+   
         this.isBusy = bool;
     }
 }//end Node class
